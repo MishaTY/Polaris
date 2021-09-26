@@ -77,29 +77,26 @@ void _start(struct stivale2_struct *stivale2_struct) {
 	gdt_init();
 	struct stivale2_struct_tag_framebuffer *fb_str_tag =
 		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
-	struct stivale2_struct_tag_memmap *memmap_tag =
-		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
-	struct stivale2_struct_tag_pmrs *pmrs_tag =
-		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_PMRS_ID);
-	struct stivale2_struct_tag_rsdp *rsdp_tag =
-		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_RSDP_ID);
-	struct stivale2_struct_tag_smp *smp_tag =
-		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_SMP_ID);
-	struct stivale2_struct_tag_modules *modules_tag =
-		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MODULES_ID);
 	video_init(fb_str_tag);
 	cpu_init();
+	struct stivale2_struct_tag_memmap *memmap_tag =
+		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
 	pmm_init((void *)memmap_tag->memmap, memmap_tag->entries);
-
+	struct stivale2_struct_tag_pmrs *pmrs_tag =
+		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_PMRS_ID);
 	vmm_init((void *)memmap_tag->memmap, memmap_tag->entries,
 			 (void *)pmrs_tag->pmrs, pmrs_tag->entries);
 	serial_install();
 	printf("Kernel build: %s\n", KVERSION);
 	isr_install();
 	asm volatile("sti");
+	struct stivale2_struct_tag_rsdp *rsdp_tag =
+		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_RSDP_ID);
 	acpi_init((void *)rsdp_tag->rsdp);
 	pic_init();
 	apic_init();
+	struct stivale2_struct_tag_smp *smp_tag =
+		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_SMP_ID);
 	smp_init(smp_tag);
 	printf("Hello World!\n");
 	printf("A (4 bytes): %p\n", kmalloc(4));
@@ -119,13 +116,13 @@ void _start(struct stivale2_struct *stivale2_struct) {
 	printf("%llu\n", get_unix_timestamp());
 	printf("HPET test works!\n");
 	ide_init();
-
 	vfs_install_fs(&tmpfs);
 	vfs_install_fs(&devtmpfs);
 	vfs_mount("tmpfs", "/", "tmpfs");
 	vfs_mkdir(NULL, "/dev", 0755, true);
 	vfs_mount("devtmpfs", "/dev", "devtmpfs");
-
+	struct stivale2_struct_tag_modules *modules_tag =
+		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MODULES_ID);
 	initramfs_init(modules_tag);
 	struct resource *h = vfs_open("/root/initramfs.txt", O_RDWR, 0644);
 	if (h == NULL)
